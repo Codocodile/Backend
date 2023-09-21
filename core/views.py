@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from core.models import Challenger
-from core.serializers import ChallengerSerializer, GroupSerializer
+from core.serializers import ChallengerSerializer, GroupSerializer, MembershipSerializer
 
 
 # Create your views here.
@@ -33,7 +33,14 @@ class ChallengerCreateAPIView(APIView):
 class TeamCreateAPIView(APIView):
     def post(self, request):
         serializer = GroupSerializer(data=request.data)
+
+
+class MemberShipCreateAPIView(APIView):
+    def post(self, request):
+        serializer = MembershipSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+

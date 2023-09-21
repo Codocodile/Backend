@@ -40,3 +40,8 @@ class GroupSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         representation['id'] = instance.id  # Add the id to the representation
         return representation
+
+class MembershipSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Membership
+        fields = ('challenger', 'group', 'role', 'status')
