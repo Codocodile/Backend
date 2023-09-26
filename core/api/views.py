@@ -1,40 +1,29 @@
-from rest_framework import generics
-from rest_framework.decorators import api_view
-from rest_framework.permissions import AllowAny
+from rest_framework import generics, permissions, status, views
 from rest_framework.response import Response
 
 from core.api.serializers import ChallengerSerializer, GroupSerializer, MembershipSerializer
-from core.models import Challenger, Group
+from core.models import Group
 
 
-# Create your views here.
-@api_view(['Get'])
-def ApiOverview(request):
-    api_urls = {
-        'add_user': '/add-user',
-        'update_user': '/update_user',
-        'delete_user': '/delete-user',
-        'add_team': '/add-team',
-        'update-team': '/update-team',
-        'delete-team': '/delete-team',
-    }
+class ChallengerCreateView(views.APIView):
+    def post(self, request):
+        serializer = ChallengerSerializer(data=request.data)
 
-    return Response(api_urls)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class UserCreateAPIView(generics.CreateAPIView):
-    queryset = Challenger.objects.all()
-    serializer_class = ChallengerSerializer
-    permission_classes = (AllowAny,)
 
 
 class TeamCreateAPIView(generics.CreateAPIView):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
-    permission_classes = (AllowAny,)
+    permission_classes = [permissions.IsAuthenticated, ]
 
 
 class MemberShipCreateAPIView(generics.CreateAPIView):
     queryset = Group.objects.all()
     serializer_class = MembershipSerializer
-    permission_classes = (AllowAny,)
+    permission_classes = (permissions.AllowAny,)
