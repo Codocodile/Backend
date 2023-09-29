@@ -2,7 +2,7 @@ from rest_framework import generics, permissions, status, views
 from rest_framework.response import Response
 
 from core.api.serializers import ChallengerSerializer, GroupSerializer, MembershipSerializer
-from core.models import Group, Challenger
+from core.models import Group, Challenger, Membership
 
 
 class ChallengerCreateAPIView(generics.CreateAPIView):
@@ -11,11 +11,23 @@ class ChallengerCreateAPIView(generics.CreateAPIView):
     permission_classes = [permissions.AllowAny, ]
 
 
-class TeamCreateAPIView(generics.CreateAPIView):
+class GroupCreateAPIView(generics.CreateAPIView):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
     permission_classes = [permissions.IsAuthenticated, ]
 
+    def perform_create(self, serializer):
+
+        try:
+            challenger = Challenger.objects.get(user=self.request.user)
+        except Challenger.DoesNotExist:
+            return Response(
+                'No challenger with the id ({0}) found'.format(self.request.user.id),
+                status=status.HTTP_406_NOT_ACCEPTABLE
+            )
+        group = serializer.save()
+        membership = Membership(challenger=challenger, group=group, role="L", status="A")
+        membership.save()
 
 class MemberShipCreateAPIView(generics.CreateAPIView):
     queryset = Group.objects.all()
