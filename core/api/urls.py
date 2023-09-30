@@ -11,5 +11,6 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('create-challenger/', views.ChallengerCreateAPIView.as_view(), name='add-challenger'),
     path('create-team/', views.GroupCreateAPIView.as_view(), name='add-challenger'),
-    path('create-membership/', views.MemberShipCreateAPIView.as_view(), name='add-membership'),
+    path('send-invitation/', views.InvitationRequestAPIView.as_view(), name='send-invitation'),
+    # path('accept-invitation/', ),
 ]
