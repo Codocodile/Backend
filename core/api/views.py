@@ -1,7 +1,7 @@
 from rest_framework import generics, permissions, status, views
 from rest_framework.response import Response
 
-from core.api.serializers import ChallengerSerializer, GroupSerializer, MembershipSerializer
+from core.api.serializers import ChallengerSerializer, GroupSerializer, SendInvitationRequestSerializer
 from core.models import Group, Challenger, Membership
 
 
@@ -29,7 +29,7 @@ class GroupCreateAPIView(generics.CreateAPIView):
         membership = Membership(challenger=challenger, group=group, role="L", status="A")
         membership.save()
 
-class MemberShipCreateAPIView(generics.CreateAPIView):
-    queryset = Group.objects.all()
-    serializer_class = MembershipSerializer
-    permission_classes = (permissions.AllowAny,)
+class InvitationRequestAPIView(generics.CreateAPIView):
+    queryset = Membership.objects.all()
+    serializer_class = SendInvitationRequestSerializer
+    permission_classes = [permissions.IsAuthenticated, ]
