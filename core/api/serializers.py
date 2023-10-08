@@ -9,7 +9,7 @@ from core.models import Challenger, Membership
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'firstname', 'lastname', 'username', 'password', 'email')
+        fields = ('id', 'first_name', 'last_name', 'password', 'email')
 
     def validate_password(self, value: str) -> str:
         return make_password(value)
@@ -20,8 +20,7 @@ class ChallengerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Challenger
-        fields = ('id', 'user', 'status', 'bio')
-
+        fields = ('id', 'user', 'firstname_persian', 'lastname_persian', 'phone_number', 'status', 'gender', 'is_workshop_attender')
     def create(self, validated_data):
         user_data = validated_data.pop('user')
         user = User.objects.create(**user_data)
@@ -40,7 +39,7 @@ class GroupSerializer(serializers.ModelSerializer):
         return representation
 
 
-class SendInvitationRequestSerializer(serializers.ModelSerializer):
+class MembershipSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Membership
         fields = ('challenger', 'group')
