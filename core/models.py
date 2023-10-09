@@ -4,14 +4,24 @@ from django.db import models
 
 class Challenger(models.Model):
     STATUS_CHOICES = (
-        ("S", "Student"),
-        ("B", "Beginner"),
-        ("A", "Advanced"),
+        ("J", "Junior"),
+        ("S", "Senior"),
+        ("P", "Pro"),
+    )
+    GENDER_CHOICES = (
+        ("M", "Male"),
+        ("F", "Female"),
     )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    first_name_persian = models.CharField(max_length=50)
+    last_name_persian = models.CharField(max_length=50)
+    phone_number = models.CharField(max_length=11)
+    gender = models.CharField(
+        max_length=1, choices=GENDER_CHOICES, default='M')
     status = models.CharField(
-        max_length=1, choices=STATUS_CHOICES, blank=True, default='S')
+        max_length=1, choices=STATUS_CHOICES, default='J')
+    is_workshop_attender = models.BooleanField(default=False)
     profile_pic = models.ImageField(upload_to='profile_pics', blank=True)
     bio = models.TextField(max_length=500, blank=True)
 
