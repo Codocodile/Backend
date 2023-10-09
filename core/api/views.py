@@ -17,7 +17,6 @@ class GroupCreateAPIView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated, ]
 
     def perform_create(self, serializer):
-
         try:
             challenger = Challenger.objects.get(user=self.request.user)
         except Challenger.DoesNotExist:
