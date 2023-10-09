@@ -1,13 +1,13 @@
 from rest_framework import generics, permissions, status, views
 from rest_framework.response import Response
 
-from core.api.serializers import ChallengerSerializer, GroupSerializer, MembershipSerializer
+from core.api.serializers import ChallengerCreateSerializer, GroupSerializer, MembershipSerializer
 from core.models import Group, Challenger, Membership
 
 
 class ChallengerCreateAPIView(generics.CreateAPIView):
     queryset = Challenger.objects.all()
-    serializer_class = ChallengerSerializer
+    serializer_class = ChallengerCreateSerializer
     permission_classes = [permissions.AllowAny, ]
 
 

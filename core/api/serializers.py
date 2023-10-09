@@ -2,32 +2,62 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
+import re
+
 from core import models
 from core.models import Challenger, Membership
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'first_name', 'last_name', 'password', 'email')
+        fields = ('first_name', 'last_name', 'password', 'email')
 
     def validate_password(self, value: str) -> str:
         return make_password(value)
 
+class UserViewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('first_name', 'last_name', 'email')
 
-class ChallengerSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
+
+class ChallengerCreateSerializer(serializers.ModelSerializer):
+    user = UserCreateSerializer()
 
     class Meta:
         model = Challenger
-        fields = ('id', 'user', 'firstـname_persian', 'lastـname_persian',
+        fields = ('user', 'first_name_persian', 'last_name_persian',
                   'phone_number', 'status', 'gender', 'is_workshop_attender')
+    
+    def validate_phone_number(self, value: str) -> str:
+        if re.match(r'^09\d{9}$', value):
+            return value
+        raise serializers.ValidationError("Phone number is not valid.")
+    
+    def validate_status(self, value: str) -> str:
+        if value in ['J', 'S', 'P']:
+            return value
+        raise serializers.ValidationError("Status is not valid.")
+    
+    def validate_gender(self, value: str) -> str:
+        if value in ['M', 'F']:
+            return value
+        raise serializers.ValidationError("Gender is not valid.")
 
     def create(self, validated_data):
         user_data = validated_data.pop('user')
         user = User.objects.create(**user_data)
         challenger = Challenger.objects.create(user=user, **validated_data)
         return challenger
+
+class ChallengerViewSerializer(serializers.ModelSerializer):
+    user = UserViewSerializer()
+
+    class Meta:
+        model = Challenger
+        fields = ('id', 'user', 'first_name_persian', 'last_name_persian',
+                  'phone_number', 'status', 'gender', 'is_workshop_attender', 'profile_pic', 'bio')
 
 
 class GroupSerializer(serializers.ModelSerializer):
@@ -64,5 +94,5 @@ class MembershipSerializer(serializers.ModelSerializer):
                 "You are not Leader of the group.")
         if data["group"] != membership.group:
             raise serializers.ValidationError(
-                "You are not member of the group whit id ({0}).".format(data["group"].id))
+                "You are not member of the group with id ({0}).".format(data["group"].id))
         return data
