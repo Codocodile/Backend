@@ -47,6 +47,7 @@ class ChallengerCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user_data = validated_data.pop('user')
+        user_data['username'] = user_data['email'].split('@')[0]
         user = User.objects.create(**user_data)
         challenger = Challenger.objects.create(user=user, **validated_data)
         return challenger
