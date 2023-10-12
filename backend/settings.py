@@ -44,12 +44,14 @@ INSTALLED_APPS = [
     'rest_framework',
     'core',
     'corsheaders',
+    'drf_standardized_errors',
 ]
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    )
+    ),
+    'EXCEPTION_HANDLER': 'drf_standardized_errors.handler.exception_handler',
 }
 
 SIMPLE_JWT = {
