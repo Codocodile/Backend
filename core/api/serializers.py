@@ -31,6 +31,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
                 "Password must contain at least one special character.")
         return make_password(value)
 
+
 class UserViewSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -44,17 +45,17 @@ class ChallengerCreateSerializer(serializers.ModelSerializer):
         model = Challenger
         fields = ('user', 'first_name_persian', 'last_name_persian',
                   'phone_number', 'status', 'gender', 'is_workshop_attender')
-    
+
     def validate_phone_number(self, value: str) -> str:
         if re.match(r'^09\d{9}$', value):
             return value
         raise serializers.ValidationError("Phone number is not valid.")
-    
+
     def validate_status(self, value: str) -> str:
         if value in ['J', 'S', 'P']:
             return value
         raise serializers.ValidationError("Status is not valid.")
-    
+
     def validate_gender(self, value: str) -> str:
         if value in ['M', 'F']:
             return value
@@ -67,13 +68,65 @@ class ChallengerCreateSerializer(serializers.ModelSerializer):
         challenger = Challenger.objects.create(user=user, **validated_data)
         return challenger
 
+
 class ChallengerViewSerializer(serializers.ModelSerializer):
     user = UserViewSerializer()
 
     class Meta:
         model = Challenger
         fields = ('id', 'user', 'first_name_persian', 'last_name_persian',
-                  'phone_number', 'status', 'gender', 'is_workshop_attender', 'profile_pic', 'bio')
+                  'phone_number', 'status', 'gender', 'is_workshop_attender', 'profile_pic', 'bio', 'is_confirmed', 'national_code', 'university')
+
+
+class ChallengerUpdateSerializer(serializers.ModelSerializer):
+    user = UserViewSerializer()
+
+    class Meta:
+        model = Challenger
+        fields = ('user', 'first_name_persian', 'last_name_persian',
+                  'status', 'gender', 'is_workshop_attender', 'bio', 'national_code', 'university')
+        
+    def validate_status(self, value: str) -> str:
+        if value in ['J', 'S', 'P']:
+            return value
+        raise serializers.ValidationError("Status is not valid.")
+
+    def validate_gender(self, value: str) -> str:
+        if value in ['M', 'F']:
+            return value
+        raise serializers.ValidationError("Gender is not valid.")
+    
+    def validate_national_code(self, value: str) -> str:
+        if value == '':
+            return value
+        if re.match(r'^\d{8}|\d{9}|\d{10}$', value):
+            if len(value) < 10:
+                value = '0' * (10 - len(value)) + value
+            temp = 0
+            for i in range(9):
+                temp += int(value[i]) * (10 - i)
+            rem = temp % 11
+            if (rem < 2 and int(value[9]) == rem) or (rem >= 2 and int(value[9]) == (11 - rem)):
+                return value
+            raise serializers.ValidationError("National Code is not valid.")
+        raise serializers.ValidationError("National Code is not valid.")
+
+    def update(self, instance, validated_data):
+        user_data = validated_data.pop('user')
+        user = User.objects.get(username=self.context['request'].user.username)
+        user.first_name = user_data['first_name']
+        user.last_name = user_data['last_name']
+        user.save()
+        instance.first_name_persian = validated_data['first_name_persian']
+        instance.last_name_persian = validated_data['last_name_persian']
+        instance.status = validated_data['status']
+        instance.gender = validated_data['gender']
+        instance.is_workshop_attender = validated_data['is_workshop_attender']
+        instance.bio = validated_data['bio']
+        instance.national_code = validated_data['national_code']
+        instance.university = validated_data['university']
+        instance.save()
+        return instance
 
 
 class GroupSerializer(serializers.ModelSerializer):

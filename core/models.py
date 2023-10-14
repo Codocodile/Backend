@@ -24,6 +24,10 @@ class Challenger(models.Model):
     is_workshop_attender = models.BooleanField(default=False)
     profile_pic = models.ImageField(upload_to='profile_pics', blank=True)
     bio = models.TextField(max_length=500, blank=True)
+    university = models.TextField(max_length=100, blank=True)
+    national_code = models.TextField(max_length=10, blank=True)
+    confirmation_code = models.CharField(max_length=5, blank=True)
+    is_confirmed = models.BooleanField(default=False)
 
     def __str__(self):
         return f'{self.user.first_name} {self.user.last_name} {self.get_status_display()}'
