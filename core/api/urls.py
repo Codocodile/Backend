@@ -13,7 +13,8 @@ urlpatterns = [
     path('confirm-challenger/', views.ChallengerConfirmAPIView.as_view(), name='confirm-challenger'),
     path('update-challenger/', views.ChallengerUpdateAPIView.as_view(), name='update-challenger'),
     path('view-challenger/', views.ChallengerViewAPIView.as_view(), name='view-challenger'),
-    path('create-team/', views.GroupCreateAPIView.as_view(), name='add-team'),
-    path('send-invitation/', views.InvitationRequestAPIView.as_view(), name='send-invitation'),
+    path('search-challenger/', views.ChallengerSearchAPIView.as_view(), name='search-challenger'),
+    path('team/', views.GroupAPIView.as_view(), name='team'),
+    path('invitation/', views.InvitationRequestAPIView.as_view(), name='invitation'),
     path('accept-invitation/', views.InvitationAcceptanceAPIView.as_view(), name='accept-invitation'),
 ]

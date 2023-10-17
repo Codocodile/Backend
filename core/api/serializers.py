@@ -5,7 +5,7 @@ from rest_framework import serializers
 import re
 
 from core import models
-from core.models import Challenger, Membership
+from core.models import Challenger, Membership, Group
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -36,6 +36,12 @@ class UserViewSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('first_name', 'last_name', 'email')
+
+
+class UserSearchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('first_name', 'last_name')
 
 
 class ChallengerCreateSerializer(serializers.ModelSerializer):
@@ -78,6 +84,15 @@ class ChallengerViewSerializer(serializers.ModelSerializer):
                   'phone_number', 'status', 'gender', 'is_workshop_attender', 'profile_pic', 'bio', 'is_confirmed', 'national_code', 'university')
 
 
+class ChallengerSearchSerializer(serializers.ModelSerializer):
+    user = UserSearchSerializer()
+
+    class Meta:
+        model = Challenger
+        fields = ('id', 'user', 'first_name_persian',
+                  'last_name_persian', 'status', 'university')
+
+
 class ChallengerUpdateSerializer(serializers.ModelSerializer):
     user = UserViewSerializer()
 
@@ -85,7 +100,7 @@ class ChallengerUpdateSerializer(serializers.ModelSerializer):
         model = Challenger
         fields = ('user', 'first_name_persian', 'last_name_persian',
                   'status', 'gender', 'is_workshop_attender', 'bio', 'national_code', 'university')
-        
+
     def validate_status(self, value: str) -> str:
         if value in ['J', 'S', 'P']:
             return value
@@ -95,7 +110,7 @@ class ChallengerUpdateSerializer(serializers.ModelSerializer):
         if value in ['M', 'F']:
             return value
         raise serializers.ValidationError("Gender is not valid.")
-    
+
     def validate_national_code(self, value: str) -> str:
         if value == '':
             return value
@@ -129,6 +144,18 @@ class ChallengerUpdateSerializer(serializers.ModelSerializer):
         return instance
 
 
+class GroupViewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Group
+        fields = ('id', 'name', 'description')
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['members'] = MembershipViewSerializer(
+            Membership.objects.filter(group=instance, status='A'), many=True).data
+        return representation
+
+
 class GroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Group
@@ -143,25 +170,37 @@ class GroupSerializer(serializers.ModelSerializer):
 class MembershipSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Membership
-        fields = ('challenger', 'group')
+        fields = ('id', 'challenger', 'group')
 
-    def validate_group(self, data):
-        user = None
-        request = self.context.get("request")
-        if request and hasattr(request, "user"):
-            user = request.user
-        try:
-            challenger = Challenger.objects.get(user=user)
-            membership = Membership.objects.get(challenger=challenger)
-        except Challenger.DoesNotExist:
-            raise serializers.ValidationError(
-                'No challenger with the id ({0}) found'.format(user.id))
-        except Membership.DoesNotExist:
-            raise serializers.ValidationError("You don't have any group.")
-        if membership.role != "L":
-            raise serializers.ValidationError(
-                "You are not Leader of the group.")
-        if data["group"] != membership.group:
-            raise serializers.ValidationError(
-                "You are not member of the group with id ({0}).".format(data["group"].id))
-        return data
+    def create(self, validated_data):
+        membership = Membership.objects.filter(
+            challenger=validated_data['challenger'], group=validated_data['group'])
+        if membership.exists():
+            if membership.filter(status='A').exists():
+                raise serializers.ValidationError(
+                    "You are already member of a group.")
+            elif membership.filter(status='P').exists():
+                raise serializers.ValidationError(
+                    "You have already requested to join a group.")
+            else:
+                membership = membership.get()
+                membership.status = 'P'
+                membership.save()
+        else:
+            membership = Membership(
+                challenger=validated_data['challenger'], group=validated_data['group'], role='M', status='P')
+            membership.save()
+        return membership
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['group'] = GroupViewSerializer(instance.group).data
+        return representation
+
+
+class MembershipViewSerializer(serializers.ModelSerializer):
+    challenger = ChallengerSearchSerializer()
+
+    class Meta:
+        model = models.Membership
+        fields = ('challenger', 'role', 'status')

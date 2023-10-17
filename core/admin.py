@@ -1,3 +1,7 @@
 from django.contrib import admin
 
-# Register your models here.
+from core import models
+
+admin.site.register(models.Challenger)
+admin.site.register(models.Group)
+admin.site.register(models.Membership)
