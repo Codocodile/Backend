@@ -215,10 +215,9 @@ class PasswordResetAPIView(views.APIView):
     permission_classes = [permissions.AllowAny, ]
 
     def post(self, request):
-        try:
-            challenger = Challenger.objects.get(
-                user__email=request.data['email'])
-        except Challenger.DoesNotExist:
+        challenger = Challenger.objects.filter(
+            user__email=request.data['email']).last()
+        if not challenger:
             raise Http404
         challenger.password_reset_code = ''.join(
             choices([str(i) for i in range(10)], k=17))
