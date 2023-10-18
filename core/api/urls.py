@@ -17,4 +17,5 @@ urlpatterns = [
     path('team/', views.GroupAPIView.as_view(), name='team'),
     path('invitation/', views.InvitationRequestAPIView.as_view(), name='invitation'),
     path('accept-invitation/', views.InvitationAcceptanceAPIView.as_view(), name='accept-invitation'),
+    path('password-reset/', views.PasswordResetAPIView.as_view(), name='password-reset'),
 ]

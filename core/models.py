@@ -28,6 +28,7 @@ class Challenger(models.Model):
     national_code = models.TextField(max_length=10, blank=True)
     confirmation_code = models.CharField(max_length=5, blank=True)
     is_confirmed = models.BooleanField(default=False)
+    password_reset_code = models.CharField(max_length=5, blank=True)
 
     def __str__(self):
         return f'{self.user.first_name} {self.user.last_name} {self.get_status_display()}'
