@@ -221,7 +221,7 @@ class PasswordResetAPIView(views.APIView):
         except Challenger.DoesNotExist:
             raise Http404
         challenger.password_reset_code = ''.join(
-            choices([str(i) for i in range(10)], k=5))
+            choices([str(i) for i in range(10)], k=17))
         challenger.save()
         send_mail(
             'Codocodile Password Reset',
