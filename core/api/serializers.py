@@ -147,7 +147,7 @@ class ChallengerUpdateSerializer(serializers.ModelSerializer):
 class GroupViewSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Group
-        fields = ('id', 'name', 'description')
+        fields = ('id', 'name', 'description', 'judge_password')
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
