@@ -204,7 +204,7 @@ class InvitationAcceptanceAPIView(generics.UpdateAPIView):
             raise serializers.ValidationError("Status is not valid.")
         membership = self.get_object()
         group = membership.group
-        if Membership.objects.filter(group=group, status='A').count() >= 2:
+        if Membership.objects.filter(group=group, status='A').count() >= 4:
             raise serializers.ValidationError("Group is full.")
         membership.status = request.data['status']
         membership.save()
